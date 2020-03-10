@@ -5,7 +5,9 @@ require 'property_accessor/property.rb'
 module PropertyAccessor
   include ClassMethods
 
-  def self.inject!
-    Class.include(ClassMethods)
+  module Mixin
+    def self.inject!
+      Class.include(ClassMethods)
+    end
   end
 end

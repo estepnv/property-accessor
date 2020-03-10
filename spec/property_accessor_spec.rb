@@ -95,7 +95,7 @@ RSpec.describe '.property' do
     end
 
     it 'sets the property' do
-      PropertyAccessor.inject!
+      PropertyAccessor::Mixin.inject!
       instance = test_class.new
       instance.foo = 'bar'
       expect(instance.foo).to eq 'bar'
