@@ -31,15 +31,35 @@ PropertyAccessor::Mixin.inject!
 Or you can manually extend your class with `PropertyAccessor` module
 
 ```ruby
+require 'date'
+
 class Person
   extend PropertyAccessor
 
-  property(:name) do
+  property(:first_name) do
     get { @name.upcase }
     set { |val| @name = val }
   end
+
+  property(:last_name)  { get; set }
+  property(:full_name)  { get { "#{first_name} #{last_name}" } }
+  property(:birth_date) { get; set { |val| @birth_date = Date.parse(val.to_s) } }
+  property(:age)        { get { (Time.now - birth_date.to_time).to_i / 60 / 60 / 24 / 365 } }
+  property(:meta)       { default { {} }; get }
 end
+
+p = Person.new
+p.first_name = 'john'
+p.last_name = 'doe'
+p.full_name
+# => 'JOHN doe'
+p.birth_date = "1992-04-12"
+p.age
+# => 27
+p.meta
+# => {}
 ```
+
 
 ## Development
 

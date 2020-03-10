@@ -6,7 +6,7 @@ RSpec.describe '.property' do
       extend PropertyAccessor
 
       property(:foo) do
-        get { @foo }
+        get { @foo.upcase }
         set { |val| @foo = val }
       end
     end
@@ -15,7 +15,7 @@ RSpec.describe '.property' do
   it 'sets the property' do
     instance = test_class.new
     instance.foo = 'bar'
-    expect(instance.foo).to eq 'bar'
+    expect(instance.foo).to eq 'BAR'
   end
 
   context 'when getter is not defined' do
@@ -41,13 +41,53 @@ RSpec.describe '.property' do
     end
   end
 
+  context 'when getter definition is not provided' do
+    let(:test_class) do
+      Class.new do
+        extend PropertyAccessor::ClassMethods
+
+        property(:foo) do
+          set { |val| @foo = 'foo' }
+          get
+        end
+
+      end
+    end
+
+    it 'behaves as default' do
+      instance = test_class.new
+      instance.foo = 'bar'
+      expect(instance.foo).to eq 'foo'
+    end
+  end
+
+  context 'when setter definition is not provided' do
+    let(:test_class) do
+      Class.new do
+        extend PropertyAccessor::ClassMethods
+
+        property(:foo) do
+          set
+          get { @foo.upcase }
+        end
+
+      end
+    end
+
+    it 'behaves as default' do
+      instance = test_class.new
+      instance.foo = 'bar'
+      expect(instance.foo).to eq 'BAR'
+    end
+  end
+
   context 'when setter is not defined' do
     let(:test_class) do
       Class.new do
         extend PropertyAccessor::ClassMethods
 
         property(:foo) do
-          get { @foo }
+          get { @foo.upcase }
         end
 
         def set_foo(val)
@@ -59,7 +99,7 @@ RSpec.describe '.property' do
     it 'sets the getter only' do
       instance = test_class.new
       instance.set_foo('bar')
-      expect(instance.foo).to eq 'bar'
+      expect(instance.foo).to eq 'BAR'
       expect(instance.respond_to?(:foo=)).to eq false
     end
   end
@@ -67,7 +107,7 @@ RSpec.describe '.property' do
   context 'when nothing is not defined' do
     let(:test_class) do
       Class.new do
-        extend PropertyAccessor::ClassMethods
+        extend PropertyAccessor
 
         property(:foo)
 
@@ -100,5 +140,51 @@ RSpec.describe '.property' do
       instance.foo = 'bar'
       expect(instance.foo).to eq 'bar'
     end
+  end
+
+  context 'when default value provided' do
+
+    let(:test_class) do
+      Class.new do
+        extend PropertyAccessor
+
+        property(:foo) do
+          default('baz')
+          get { @foo }
+          set { |val| @foo = val }
+        end
+      end
+    end
+
+    it 'provides default value' do
+      instance = test_class.new
+      expect(instance.foo).to eq 'baz'
+      instance.foo = 'bar'
+      expect(instance.foo).to eq 'bar'
+    end
+
+  end
+
+  context 'when default value provided as block' do
+
+    let(:test_class) do
+      Class.new do
+        extend PropertyAccessor
+
+        property(:foo) do
+          default { 'baz' }
+          get { @foo }
+          set { |val| @foo = val }
+        end
+      end
+    end
+
+    it 'provides default value' do
+      instance = test_class.new
+      expect(instance.foo).to eq 'baz'
+      instance.foo = 'bar'
+      expect(instance.foo).to eq 'bar'
+    end
+
   end
 end
