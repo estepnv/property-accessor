@@ -14,10 +14,10 @@ module PropertyAccessor
 
       builder.instance_exec(&block)
 
-      define_method("initialize_#{property.name}") do
-        if !instance_variable_defined?("@#{property.name}")
+      define_method(property.initializer_method_name) do
+        if !instance_variable_defined?(property.field_name)
           instance_variable_set(
-            "@#{property.name}",
+            property.field_name,
             property.default_value_proc ?
               instance_exec(&property.default_value_proc) :
               property.default_value
@@ -25,30 +25,39 @@ module PropertyAccessor
         end
       end
 
-      private "initialize_#{property.name}"
+      private property.initializer_method_name
 
       if property.getter_defined?
-        define_method(property.name) do
-          send("initialize_#{property.name}")
+        define_method(property.getter_method_name) do
+          send(property.initializer_method_name)
           instance_exec(&property.getter_proc)
+        end
+      elsif property.default_getter
+        define_method(property.getter_method_name) do
+          send(property.initializer_method_name)
+          instance_variable_get(property.field_name)
         end
       end
 
       if property.setter_defined?
-        define_method("#{property.name}=", property.setter_proc)
-      end
-
-      if property.default_getter
-        define_method(property.name) do
-          send("initialize_#{property.name}")
-          instance_variable_get("@#{property.name}")
+        define_method(property.setter_method_name, property.setter_proc)
+      elsif property.default_setter
+        define_method(property.setter_method_name) do |val|
+          instance_variable_set(property.field_name, val)
         end
       end
 
-      if property.default_setter
-        attr_writer property.name
+      property.private_method_names.each do |method_name|
+        private method_name
       end
 
+      property.protected_method_names.each do |method_name|
+        protected method_name
+      end
+
+      property.public_method_names.each do |method_name|
+        public method_name
+      end
     end
   end
 end

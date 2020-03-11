@@ -36,16 +36,14 @@ require 'date'
 class Person
   extend PropertyAccessor
 
-  property(:first_name) do
-    get { @name.upcase }
-    set { |val| @name = val }
-  end
-
-  property(:last_name)  { get; set }
-  property(:full_name)  { get { "#{first_name} #{last_name}" } }
-  property(:birth_date) { get; set { |val| @birth_date = Date.parse(val.to_s) } }
-  property(:age)        { get { (Time.now - birth_date.to_time).to_i / 60 / 60 / 24 / 365 } }
-  property(:meta)       { default { {} }; get }
+  property(:first_name)   { get { @name.upcase }; set(:family_name) { |val| @name = val } }
+  property(:last_name)    { get; set }
+  property(:full_name)    { get { "#{first_name} #{last_name}" } }
+  property(:birth_date)   { get; set { |val| @birth_date = Date.parse(val.to_s) } }
+  property(:age)          { get { (Time.now - birth_date.to_time).to_i / 60 / 60 / 24 / 365 } }
+  property(:confidential) { private get; public set; }
+  property(:middle_name)  { get(:get_middle_name); set(:set_middle_name); }
+  property(:meta)         { default { {} }; get }
 end
 
 p = Person.new
