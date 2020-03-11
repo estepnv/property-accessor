@@ -9,7 +9,7 @@ module PropertyAccessor
       builder = PropertyBuilder.new(property)
 
       if block.nil?
-        raise UndefinedPropertyError, 'cannot define a proprty without specifing at least getter or setter'
+        raise UndefinedPropertyError, 'cannot define a property without specifying at least getter or setter'
       end
 
       builder.instance_exec(&block)
